@@ -1,0 +1,108 @@
+const express = require("express");
+const router = express.Router();
+const bodyParser = require("body-parser");
+const jsonParser = bodyParser.json();
+
+const pool = require("../app");
+router.get("/", getAllUnits);
+router.post("/", jsonParser, createUnit);
+router.get("/words", jsonParser, getWordsInUnit);
+
+module.exports = router;
+
+function getAllUnits(req, reshttp) {
+	pool.getConnection((err, connection) => {
+		if (err) throw err;
+		connection.query(`select id,name from units order by id desc`, (err, units) => {
+			connection.release();
+			if (err) throw err;
+			reshttp.status(200);
+			reshttp.end(
+				JSON.stringify({
+					message: "units",
+					units,
+				})
+			);
+		});
+	});
+}
+
+function createUnit(req, reshttp) {
+	const unit = req.body.unit;
+	pool.getConnection((err, connection) => {
+		if (err) throw err;
+		connection.query(
+			`select id from units where name = '${unit}'`,
+			(err, res) => {
+				if (err) throw err;
+				if (res.length === 0) {
+					connection.query(
+						`insert into units (name) values ('${unit}')`,
+						(err) => {
+							if (err) throw err;
+							connection.release();
+							reshttp.status(200);
+							reshttp.end(
+								JSON.stringify({
+									message: "created new unit",
+								})
+							);
+						}
+					);
+				} else {
+					connection.release();
+					reshttp.status(200);
+					reshttp.end(
+						JSON.stringify({
+							message: "This unit already exists",
+						})
+					);
+				}
+			}
+		);
+	});
+}
+
+function getWordsInUnit(req, reshttp) {
+	const cz = req.query.cz.trim();
+	const en = req.query.en.trim();
+	const unit = req.query.unit.trim();
+	if (unit) {
+		pool.getConnection((err, connection) => {
+			if (err) throw err;
+			// get unit id
+			connection.query(
+				`select id from units where name = '${unit}'`,
+				(err, res) => {
+					if (err) throw err;
+					const unitId = res[0].id;
+					connection.query(
+						`select id,cz,en from unitwords where unit = ${unitId} order by id desc`,
+						(err, res) => {
+							connection.release();
+							if (err) throw err;
+							const czExists = res.map((w) => w.cz).includes(cz);
+							const enExists = res.map((w) => w.en).includes(en);
+							reshttp.status(200);
+							reshttp.end(
+								JSON.stringify({
+									message: "exists?",
+									czExists,
+									enExists,
+								})
+							);
+						}
+					);
+				}
+			);
+		});
+	} else {
+		reshttp.status(200);
+		reshttp.end(
+			JSON.stringify({
+				message: "fine",
+				data: [],
+			})
+		);
+	}
+}
