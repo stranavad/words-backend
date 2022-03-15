@@ -26,6 +26,13 @@ const words = require("./views/words");
 const units = require("./views/units");
 const nubes = require("./views/nubes");
 
+app.use(function (req, res, next) {
+	res.append("Access-Control-Allow-Origin", ["*"]);
+	res.append("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE");
+	res.append("Access-Control-Allow-Headers", "Content-Type");
+	next();
+});
+
 app.use("/words", words);
 app.use("/units", units);
 app.use("/api", nubes);
