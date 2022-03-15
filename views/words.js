@@ -9,7 +9,7 @@ const pool = require("../app");
 router.get("/", getAllWords);
 router.post("/", jsonParser, createWords);
 router.delete("/", jsonParser, deleteWord);
-router.get("/export", exportWords);
+router.post("/export", jsonParser, exportWords);
 
 module.exports = router;
 
@@ -79,16 +79,45 @@ function deleteWord(req, reshttp) {
 	});
 }
 
-function exportWords(_, reshttp) {
-	//const unit = req.body.unit;
+function exportWords(req, reshttp) {
+	const units = req.body.units;
 	pool.getConnection((err, connection) => {
 		if (err) throw err;
-		connection.query(`select cz,en from unitwords`, (err, res) => {
-			if (err) throw err;
-			connection.release();
-			let returnData = res.map(({ cz, en }) => `${en} -- ${cz}\n`).join('');
-			reshttp.status(200);
-			reshttp.end(returnData);
-		});
+		if (units.length > 0) {
+			// getting units ids
+			connection.query(
+				`select id from units where name in (${units
+					.map((u) => `'${u}'`)
+					.join(",")})`,
+				(err, res) => {
+					if (err) throw err;
+					// getting words
+					connection.query(
+						`select cz,en from unitwords where unit in (${res
+							.map(({ id }) => id)
+							.join(",")})`,
+						(err, res) => {
+							if (err) throw err;
+							connection.release();
+							let returnData = res
+								.map(({ cz, en }) => `${en} -- ${cz}\n`)
+								.join("");
+							reshttp.status(200);
+							reshttp.end(returnData);
+						}
+					);
+				}
+			);
+		} else {
+			connection.query(`select cz,en from unitwords`, (err, res) => {
+				if (err) throw err;
+				connection.release();
+				let returnData = res
+					.map(({ cz, en }) => `${en} -- ${cz}\n`)
+					.join("");
+				reshttp.status(200);
+				reshttp.end(returnData);
+			});
+		}
 	});
 }
