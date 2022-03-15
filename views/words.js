@@ -2,16 +2,18 @@ const express = require("express");
 const router = express.Router();
 const bodyParser = require("body-parser");
 const jsonParser = bodyParser.json();
-
+const fs = require("fs");
+const path = require("path");
 const pool = require("../app");
 
 router.get("/", getAllWords);
 router.post("/", jsonParser, createWords);
 router.delete("/", jsonParser, deleteWord);
+router.get("/export", exportWords);
 
 module.exports = router;
 
-function getAllWords(req, reshttp) {
+function getAllWords(_, reshttp) {
 	pool.getConnection((err, connection) => {
 		if (err) throw err;
 		connection.query(
@@ -73,6 +75,20 @@ function deleteWord(req, reshttp) {
 					message: "deleted",
 				})
 			);
+		});
+	});
+}
+
+function exportWords(_, reshttp) {
+	//const unit = req.body.unit;
+	pool.getConnection((err, connection) => {
+		if (err) throw err;
+		connection.query(`select cz,en from unitwords`, (err, res) => {
+			if (err) throw err;
+			connection.release();
+			let returnData = res.map(({ cz, en }) => `${en} -- ${cz}\n`).join('');
+			reshttp.status(200);
+			reshttp.end(returnData);
 		});
 	});
 }

@@ -1,14 +1,21 @@
 const express = require("express");
 const app = express();
 const mysql = require("mysql");
+const path = require('path');
+const dotenv = require("dotenv").config({
+	path: path.join(__dirname, ".env"),
+});
+
+const { APP_PORT, DB_USER, DB_PASSWORD, DB_URL } = process.env;
+
 // const bodyParser = require('body-parser');
 // const jsonParser = bodyParser.json();
 
 // Mysql connection
 const pool = mysql.createPool({
-	host: "127.0.0.1",
-	user: "admin",
-	password: "password",
+	host: DB_URL,
+	user: DB_USER,
+	password: DB_PASSWORD,
 	database: "words",
 	connectionLimit: 8,
 });
@@ -23,4 +30,4 @@ app.use("/words", words);
 app.use("/units", units);
 app.use("/api", nubes);
 app.use("/", nubes);
-app.listen(3000);
+app.listen(APP_PORT, () => console.log(`listening on port: ${APP_PORT}`));
