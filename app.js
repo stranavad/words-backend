@@ -17,7 +17,7 @@ module.exports = pool;
 
 const words = require("./views/words");
 const units = require("./views/units");
-const nubes = require("./vies/nubes");
+const nubes = require("./views/nubes");
 
 app.use("/words", words);
 app.use("/units", units);
