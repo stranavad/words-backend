@@ -134,13 +134,13 @@ function getAllUnitsExtended(_, reshttp) {
 			if (err) throw err;
 			connection.release();
 			let returnData = {};
-			for (u in res) {
-				if (returnData[res[u].id]) {
-					returnData[u].wordCount += 1;
+			res.forEach((item) => {
+				if (returnData[item.id]) {
+					returnData[item.id].wordCount += 1;
 				} else {
-					returnData[res[u].id] = {id: res[u].id, name: res[u].name, wordCount: res[u].wordId ? 1 : 0}
+					returnData[item.id] = {id: item.id, name: item.name, wordCount: item.wordId ? 1 : 0}
 				}
-			}
+			})
 			reshttp.status(200);
 			reshttp.end(JSON.stringify({
 				message: 'units detailed',
