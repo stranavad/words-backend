@@ -5,13 +5,14 @@ const jsonParser = bodyParser.json();
 
 const pool = require("../app");
 router.get("/", getAllUnits);
+router.get("/detailed", getAllUnitsExtended);
 router.post("/", jsonParser, createUnit);
 router.get("/words", jsonParser, getWordsInUnit);
 router.delete("/", jsonParser, deleteUnit);
 
 module.exports = router;
 
-function getAllUnits(req, reshttp) {
+function getAllUnits(_, reshttp) {
 	pool.getConnection((err, connection) => {
 		if (err) throw err;
 		connection.query(`select id,name from units order by id desc`, (err, units) => {
@@ -122,6 +123,29 @@ function deleteUnit(req, reshttp) {
 					message: 'Vymazano adios'
 				}))
 			})
+		})
+	})
+}
+
+function getAllUnitsExtended(_, reshttp) {
+	pool.getConnection((err, connection) => {
+		if (err) throw err;
+		connection.query(`select units.id as id, units.name as name, unitwords.id as wordId from units left join unitwords on units.id = unitwords.unit`, (err, res) => {
+			if (err) throw err;
+			connection.release();
+			let returnData = {};
+			for (u in res) {
+				if (returnData[res[u].id]) {
+					returnData[u].wordCount += 1;
+				} else {
+					returnData[res[u].id] = {id: res[u].id, name: res[u].name, wordCount: res[u].wordId ? 1 : 0}
+				}
+			}
+			reshttp.status(200);
+			reshttp.end(JSON.stringify({
+				message: 'units detailed',
+				data: returnData,
+			}))
 		})
 	})
 }
