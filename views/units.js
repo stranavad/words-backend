@@ -144,7 +144,7 @@ function getAllUnitsExtended(_, reshttp) {
 			reshttp.status(200);
 			reshttp.end(JSON.stringify({
 				message: 'units detailed',
-				data: returnData,
+				data: Object.values(returnData),
 			}))
 		})
 	})
