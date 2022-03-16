@@ -7,6 +7,7 @@ const pool = require("../app");
 router.get("/", getAllUnits);
 router.post("/", jsonParser, createUnit);
 router.get("/words", jsonParser, getWordsInUnit);
+router.delete("/", jsonParser, deleteUnit);
 
 module.exports = router;
 
@@ -105,4 +106,22 @@ function getWordsInUnit(req, reshttp) {
 			})
 		);
 	}
+}
+
+function deleteUnit(req, reshttp) {
+	const id = req.query.id;
+	pool.getConnection((err, connection) => {
+		if (err) throw err;
+		connection.query(`delete from unitwords where unit = ${id}`, (err) => {
+			if (err) throw err;
+			connection.query(`delete from units where id = ${id}`, (err) => {
+				if (err) throw err;
+				connection.release();
+				reshttp.status(200);
+				reshttp.end(JSON.stringify({
+					message: 'Vymazano adios'
+				}))
+			})
+		})
+	})
 }
