@@ -8,6 +8,7 @@ const pool = require("../app");
 
 router.get("/", getAllWords);
 router.post("/", jsonParser, createWords);
+router.put("/", jsonParser, updateWord);
 router.delete("/", jsonParser, deleteWord);
 router.post("/export", jsonParser, exportWords);
 
@@ -119,5 +120,25 @@ function exportWords(req, reshttp) {
 				reshttp.end(returnData);
 			});
 		}
+	});
+}
+
+function updateWord(req, reshttp) {
+	const { id, en, cz } = req.body;
+	pool.getConnection((err, connection) => {
+		if (err) throw err;
+		connection.query(
+			`update unitwords set cz = '${cz}', en = '${en}' where id = ${id}`,
+			(err) => {
+				if (err) throw err;
+				connection.release();
+				reshttp.status(200);
+				reshttp.end(
+					JSON.stringify({
+						message: "updated",
+					})
+				);
+			}
+		);
 	});
 }
