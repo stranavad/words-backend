@@ -128,7 +128,7 @@ function updateWord(req, reshttp) {
 	pool.getConnection((err, connection) => {
 		if (err) throw err;
 		connection.query(
-			`update unitwords set cz = '${cz}', en = '${en}' where id = ${id}`,
+			`update unitwords set cz = "${cz}", en = "${en}" where id = ${id}`,
 			(err) => {
 				if (err) throw err;
 				connection.release();
