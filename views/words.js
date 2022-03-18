@@ -42,11 +42,11 @@ function createWords(req, reshttp) {
 	pool.getConnection((err, connection) => {
 		if (err) throw err;
 		connection.query(
-			`select id from units where name = '${unit}'`,
+			`select id from units where name = "${unit}"`,
 			(err, res) => {
 				if (err) throw err;
 				connection.query(
-					`insert into unitwords (cz,en,unit) values('${cz}', '${en}', ${res[0].id})`,
+					`insert into unitwords (cz,en,unit) values("${cz}", "${en}", ${res[0].id})`,
 					(err) => {
 						if (err) throw err;
 						connection.release();
@@ -88,7 +88,7 @@ function exportWords(req, reshttp) {
 			// getting units ids
 			connection.query(
 				`select id from units where name in (${units
-					.map((u) => `'${u}'`)
+					.map((u) => `"${u}"`)
 					.join(",")})`,
 				(err, res) => {
 					if (err) throw err;

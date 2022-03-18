@@ -38,12 +38,12 @@ function createUnit(req, reshttp) {
 	pool.getConnection((err, connection) => {
 		if (err) throw err;
 		connection.query(
-			`select id from units where name = '${unit}'`,
+			`select id from units where name = "${unit}"`,
 			(err, res) => {
 				if (err) throw err;
 				if (res.length === 0) {
 					connection.query(
-						`insert into units (name) values ('${unit}')`,
+						`insert into units (name) values ("${unit}")`,
 						(err) => {
 							if (err) throw err;
 							connection.release();
@@ -78,7 +78,7 @@ function getWordsInUnit(req, reshttp) {
 			if (err) throw err;
 			// get unit id
 			connection.query(
-				`select id from units where name = '${unit}'`,
+				`select id from units where name = "${unit}"`,
 				(err, res) => {
 					if (err) throw err;
 					const unitId = res[0].id;
@@ -175,7 +175,7 @@ function updateUnit(req, reshttp) {
 				if (err) throw err;
 				if (res.length > 0) {
 					connection.query(
-						`update units set name = '${name}' where id = ${id}`,
+						`update units set name = "${name}" where id = ${id}`,
 						(err) => {
 							if (err) throw err;
 							connection.release();
