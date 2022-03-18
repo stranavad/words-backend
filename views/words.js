@@ -81,32 +81,22 @@ function deleteWord(req, reshttp) {
 }
 
 function exportWords(req, reshttp) {
-	const units = req.body.units;
+	const units = req.body.units.map(u => u.id);
 	pool.getConnection((err, connection) => {
 		if (err) throw err;
 		if (units.length > 0) {
 			// getting units ids
 			connection.query(
-				`select id from units where name in (${units
-					.map((u) => `"${u}"`)
+				`select cz,en from unitwords where unit in (${units
 					.join(",")})`,
 				(err, res) => {
 					if (err) throw err;
-					// getting words
-					connection.query(
-						`select cz,en from unitwords where unit in (${res
-							.map(({ id }) => id)
-							.join(",")})`,
-						(err, res) => {
-							if (err) throw err;
-							connection.release();
-							let returnData = res
-								.map(({ cz, en }) => `${en} -- ${cz}\n`)
-								.join("");
-							reshttp.status(200);
-							reshttp.end(returnData);
-						}
-					);
+					connection.release();
+					let returnData = res
+						.map(({ cz, en }) => `${en} -- ${cz}\n`)
+						.join("");
+					reshttp.status(200);
+					reshttp.end(returnData);
 				}
 			);
 		} else {
