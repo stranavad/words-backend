@@ -17,7 +17,7 @@ function getAllUnits(_, reshttp) {
 	pool.getConnection((err, connection) => {
 		if (err) throw err;
 		connection.query(
-			`select id,name from units order by id desc`,
+			`select id,name,color from units order by id desc`,
 			(err, units) => {
 				connection.release();
 				if (err) throw err;
@@ -34,16 +34,16 @@ function getAllUnits(_, reshttp) {
 }
 
 function createUnit(req, reshttp) {
-	const unit = req.body.unit;
+	const {name, color} = req.body.unit;
 	pool.getConnection((err, connection) => {
 		if (err) throw err;
 		connection.query(
-			`select id from units where name = "${unit}"`,
+			`select id from units where name = "${name}"`,
 			(err, res) => {
 				if (err) throw err;
 				if (res.length === 0) {
 					connection.query(
-						`insert into units (name) values ("${unit}")`,
+						`insert into units (name, color) values ("${name}", "${color}")`,
 						(err) => {
 							if (err) throw err;
 							connection.release();
@@ -137,7 +137,7 @@ function getAllUnitsExtended(_, reshttp) {
 	pool.getConnection((err, connection) => {
 		if (err) throw err;
 		connection.query(
-			`select units.id as id, units.name as name, unitwords.id as wordId from units left join unitwords on units.id = unitwords.unit`,
+			`select units.id as id, units.name as name, units.color as color, unitwords.id as wordId from units left join unitwords on units.id = unitwords.unit`,
 			(err, res) => {
 				if (err) throw err;
 				connection.release();
@@ -149,6 +149,7 @@ function getAllUnitsExtended(_, reshttp) {
 						returnData[item.id] = {
 							id: item.id,
 							name: item.name,
+							color: item.color,
 							wordCount: item.wordId ? 1 : 0,
 						};
 					}
@@ -166,7 +167,7 @@ function getAllUnitsExtended(_, reshttp) {
 }
 
 function updateUnit(req, reshttp) {
-	const { id, name } = req.body;
+	const { id, name, color } = req.body;
 	pool.getConnection((err, connection) => {
 		if (err) throw err;
 		connection.query(
@@ -175,7 +176,7 @@ function updateUnit(req, reshttp) {
 				if (err) throw err;
 				if (res.length > 0) {
 					connection.query(
-						`update units set name = "${name}" where id = ${id}`,
+						`update units set name = "${name}", color = "${color}" where id = ${id}`,
 						(err) => {
 							if (err) throw err;
 							connection.release();
