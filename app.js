@@ -25,6 +25,7 @@ module.exports = pool;
 const words = require("./views/words");
 const units = require("./views/units");
 const nubes = require("./views/nubes");
+const utils = require("./views/utils");
 
 app.use(function (req, res, next) {
 	res.append("Access-Control-Allow-Origin", ["*"]);
@@ -35,6 +36,7 @@ app.use(function (req, res, next) {
 
 app.use("/words", words);
 app.use("/units", units);
+app.use("/utils", utils);
 app.use("/api", nubes);
 app.use("/", nubes);
 app.listen(APP_PORT, () => console.log(`listening on port: ${APP_PORT}`));

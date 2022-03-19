@@ -25,7 +25,7 @@ function getAllUnits(_, reshttp) {
 				reshttp.end(
 					JSON.stringify({
 						message: "units",
-						units,
+						units: units.map((u) => ({...u, showEdit: false})),
 					})
 				);
 			}
@@ -158,7 +158,7 @@ function getAllUnitsExtended(_, reshttp) {
 				reshttp.end(
 					JSON.stringify({
 						message: "units detailed",
-						data: Object.values(returnData),
+						units: Object.values(returnData),
 					})
 				);
 			}
