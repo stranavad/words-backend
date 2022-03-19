@@ -2,8 +2,6 @@ const express = require("express");
 const router = express.Router();
 const bodyParser = require("body-parser");
 const jsonParser = bodyParser.json();
-const fs = require("fs");
-const path = require("path");
 const pool = require("../app");
 
 router.get("/", getAllWords);
