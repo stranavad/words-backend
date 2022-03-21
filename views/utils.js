@@ -12,7 +12,7 @@ function getInitialData(_, reshttp) {
 	pool.getConnection((err, connection) => {
 		if (err) throw err;
 		connection.query(
-			`select units.id as unitId, units.name as unitName, unitwords.id as id, unitwords.cz as cz, unitwords.en as en, units.color as color, unitwords.unit as unit from units left join unitwords on units.id = unitwords.unit`,
+			`select units.id as unitId, units.name as unitName, unitwords.id as id, unitwords.cz as cz, unitwords.en as en, units.color as color, unitwords.unit as unit from units left join unitwords on units.id = unitwords.unit order by unitwords.id desc`,
 			(err, res) => {
 				if (err) throw err;
 				connection.release();
@@ -37,7 +37,6 @@ function getInitialData(_, reshttp) {
 						};
 					}
 				});
-				console.log(Object.values(units));
 				reshttp.status(200);
 				reshttp.end(
 					JSON.stringify({

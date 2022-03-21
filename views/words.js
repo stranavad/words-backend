@@ -74,7 +74,6 @@ function deleteWord(req, reshttp) {
 
 function exportWords(req, reshttp) {
 	const units = req.body.units.map(u => u.id);
-	console.log(req.body);
 	pool.getConnection((err, connection) => {
 		if (err) throw err;
 		if (units.length > 0) {
@@ -107,8 +106,6 @@ function exportWords(req, reshttp) {
 }
 
 function updateWord(req, reshttp) {
-	console.log(req.body);
-	console.log(req);
 	const { id, en, cz } = req.body;
 	pool.getConnection((err, connection) => {
 		if (err) throw err;
