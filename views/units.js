@@ -25,7 +25,7 @@ function getAllUnits(_, reshttp) {
 				reshttp.end(
 					JSON.stringify({
 						message: "units",
-						units: units.map((u) => ({...u, showEdit: false})),
+						units: units.map((u) => ({ ...u, showEdit: false })),
 					})
 				);
 			}
@@ -34,7 +34,7 @@ function getAllUnits(_, reshttp) {
 }
 
 function createUnit(req, reshttp) {
-	const {name, color} = req.body.unit;
+	const { name, color } = req.body.unit;
 	pool.getConnection((err, connection) => {
 		if (err) throw err;
 		connection.query(
@@ -72,32 +72,24 @@ function createUnit(req, reshttp) {
 function getWordsInUnit(req, reshttp) {
 	const cz = req.query.cz.trim();
 	const en = req.query.en.trim();
-	const unit = req.query.unit.trim();
+	const unit = req.query.unit;
 	if (unit) {
 		pool.getConnection((err, connection) => {
 			if (err) throw err;
-			// get unit id
 			connection.query(
-				`select id from units where name = "${unit}"`,
+				`select id,cz,en from unitwords where unit = ${unit} order by id desc`,
 				(err, res) => {
+					connection.release();
 					if (err) throw err;
-					const unitId = res[0].id;
-					connection.query(
-						`select id,cz,en from unitwords where unit = ${unitId} order by id desc`,
-						(err, res) => {
-							connection.release();
-							if (err) throw err;
-							const czExists = res.map((w) => w.cz).includes(cz);
-							const enExists = res.map((w) => w.en).includes(en);
-							reshttp.status(200);
-							reshttp.end(
-								JSON.stringify({
-									message: "exists?",
-									czExists,
-									enExists,
-								})
-							);
-						}
+					const czExists = res.map((w) => w.cz).includes(cz);
+					const enExists = res.map((w) => w.en).includes(en);
+					reshttp.status(200);
+					reshttp.end(
+						JSON.stringify({
+							message: "exists?",
+							czExists,
+							enExists,
+						})
 					);
 				}
 			);

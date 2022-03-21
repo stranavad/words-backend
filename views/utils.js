@@ -37,6 +37,7 @@ function getInitialData(_, reshttp) {
 						};
 					}
 				});
+				console.log(Object.values(units));
 				reshttp.status(200);
 				reshttp.end(
 					JSON.stringify({

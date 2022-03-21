@@ -40,21 +40,15 @@ function createWords(req, reshttp) {
 	pool.getConnection((err, connection) => {
 		if (err) throw err;
 		connection.query(
-			`select id from units where name = "${unit}"`,
-			(err, res) => {
+			`insert into unitwords (cz,en,unit) values("${cz}", "${en}", ${unit})`,
+			(err) => {
 				if (err) throw err;
-				connection.query(
-					`insert into unitwords (cz,en,unit) values("${cz}", "${en}", ${res[0].id})`,
-					(err) => {
-						if (err) throw err;
-						connection.release();
-						reshttp.status(200);
-						reshttp.end(
-							JSON.stringify({
-								message: "Inserted",
-							})
-						);
-					}
+				connection.release();
+				reshttp.status(200);
+				reshttp.end(
+					JSON.stringify({
+						message: "Inserted",
+					})
 				);
 			}
 		);
@@ -80,6 +74,7 @@ function deleteWord(req, reshttp) {
 
 function exportWords(req, reshttp) {
 	const units = req.body.units.map(u => u.id);
+	console.log(req.body);
 	pool.getConnection((err, connection) => {
 		if (err) throw err;
 		if (units.length > 0) {
@@ -94,7 +89,7 @@ function exportWords(req, reshttp) {
 						.map(({ cz, en }) => `${en} -- ${cz}\n`)
 						.join("");
 					reshttp.status(200);
-					reshttp.end(returnData);
+					reshttp.end(JSON.stringify({data: returnData}));
 				}
 			);
 		} else {
@@ -112,6 +107,8 @@ function exportWords(req, reshttp) {
 }
 
 function updateWord(req, reshttp) {
+	console.log(req.body);
+	console.log(req);
 	const { id, en, cz } = req.body;
 	pool.getConnection((err, connection) => {
 		if (err) throw err;
