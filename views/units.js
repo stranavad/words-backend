@@ -7,6 +7,7 @@ const pool = require("../app");
 router.get("/", getAllUnits);
 router.get("/detailed", getAllUnitsExtended);
 router.post("/", jsonParser, createUnit);
+router.get("/id", jsonParser, getUnitById);
 router.put("/", jsonParser, updateUnit);
 router.get("/words", jsonParser, getWordsInUnit);
 router.delete("/", jsonParser, deleteUnit);
@@ -77,18 +78,20 @@ function getWordsInUnit(req, reshttp) {
 		pool.getConnection((err, connection) => {
 			if (err) throw err;
 			connection.query(
-				`select id,cz,en from unitwords where unit = ${unit} order by id desc`,
+				`select id,cz,en from unitwords where unit = ${unit} and (cz = "${cz}" or en = "${en}") order by id desc`,
 				(err, res) => {
 					connection.release();
 					if (err) throw err;
 					const czExists = res.map((w) => w.cz).includes(cz);
 					const enExists = res.map((w) => w.en).includes(en);
 					reshttp.status(200);
+
 					reshttp.end(
 						JSON.stringify({
 							message: "exists?",
 							czExists,
 							enExists,
+							wordId: res[0]?.id,
 						})
 					);
 				}
@@ -163,33 +166,31 @@ function updateUnit(req, reshttp) {
 	pool.getConnection((err, connection) => {
 		if (err) throw err;
 		connection.query(
-			`select id from units where id = ${id}`,
-			(err, res) => {
+			`update units set name = "${name}", color = "${color}" where id = ${id}`,
+			(err) => {
 				if (err) throw err;
-				if (res.length > 0) {
-					connection.query(
-						`update units set name = "${name}", color = "${color}" where id = ${id}`,
-						(err) => {
-							if (err) throw err;
-							connection.release();
-							reshttp.status(200);
-							reshttp.end(
-								JSON.stringify({
-									message: "updated",
-								})
-							);
-						}
-					);
-				} else {
-					connection.release();
-					reshttp.status(200);
-					reshttp.end(
-						JSON.stringify({
-							message: "warning",
-						})
-					);
-				}
+				connection.release();
+				reshttp.status(200);
+				reshttp.end(
+					JSON.stringify({
+						message: "updated",
+					})
+				);
 			}
 		);
+	});
+}
+
+function getUnitById(req, reshttp) {
+	const { id } = req.query;
+	pool.getConnection((err, connection) => {
+		if (err) throw err;
+		connection.query(`select * from units where id = ${id}`, (err, res) => {
+			if (err) throw err;
+			connection.release();
+			reshttp.status(200);
+			console.log(res);
+			reshttp.end(JSON.stringify(res[0]));
+		});
 	});
 }
