@@ -91,7 +91,7 @@ function getWordsInUnit(req, reshttp) {
 							message: "exists?",
 							czExists,
 							enExists,
-							wordId: res[0].id ? res[0].id : null, 
+							wordId: res[0] ? res[0].id : null, 
 						})
 					);
 				}
