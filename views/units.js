@@ -39,32 +39,16 @@ function createUnit(req, reshttp) {
 	pool.getConnection((err, connection) => {
 		if (err) throw err;
 		connection.query(
-			`select id from units where name = "${name}"`,
-			(err, res) => {
+			`insert into units (name, color) values ("${name}", "${color}")`,
+			(err) => {
 				if (err) throw err;
-				if (res.length === 0) {
-					connection.query(
-						`insert into units (name, color) values ("${name}", "${color}")`,
-						(err) => {
-							if (err) throw err;
-							connection.release();
-							reshttp.status(200);
-							reshttp.end(
-								JSON.stringify({
-									message: "created new unit",
-								})
-							);
-						}
-					);
-				} else {
-					connection.release();
-					reshttp.status(200);
-					reshttp.end(
-						JSON.stringify({
-							message: "This unit already exists",
-						})
-					);
-				}
+				connection.release();
+				reshttp.status(200);
+				reshttp.end(
+					JSON.stringify({
+						message: "created new unit",
+					})
+				);
 			}
 		);
 	});
