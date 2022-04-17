@@ -122,7 +122,7 @@ function countWords(req, reshttp) {
 	pool.getConnection((err, connection) => {
 		if (err) throw err;
 		let query = `select count(id) from unitwords`;
-		if (units?.length > 0) {
+		if (units) {
 			query += ` where unit in ${multi(units)}`;
 		}
 		connection.query(query, (err, res) => {
