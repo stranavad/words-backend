@@ -6,6 +6,7 @@ const pool = require("../app");
 
 router.post("/", jsonParser, getWord);
 router.post("/correct", jsonParser, isCorrect);
+router.post("/count", jsonParser, countWords);
 
 module.exports = router;
 
@@ -31,7 +32,7 @@ function getWord(req, reshttp) {
 			if (units.length > 0) {
 				query += ` unit in ${multi(units)}`;
 			}
-			query += " limit 1";
+			query += " order by rand() limit 1";
 		}
 		// query builder end
 		connection.query(query, (err, word) => {
@@ -48,10 +49,7 @@ function getWord(req, reshttp) {
 			} else {
 				// selecting other words
 				connection.query(
-					`select en from unitwords where id not in ${multi([
-						...words,
-						word[0].id,
-					])} ORDER BY RAND() limit 3`,
+					`select id,en from unitwords where id != ${word[0].id} order by rand() limit 3`,
 					(err, resWords) => {
 						if (err) throw err;
 						connection.release();
@@ -84,13 +82,10 @@ function shuffle(array) {
 	let currentIndex = array.length,
 		randomIndex;
 
-	// While there remain elements to shuffle.
 	while (currentIndex != 0) {
-		// Pick a remaining element.
 		randomIndex = Math.floor(Math.random() * currentIndex);
 		currentIndex--;
 
-		// And swap it with the current element.
 		[array[currentIndex], array[randomIndex]] = [
 			array[randomIndex],
 			array[currentIndex],
@@ -120,4 +115,24 @@ function isCorrect(req, reshttp) {
 			}
 		);
 	});
+}
+
+function countWords(req, reshttp) {
+	const { units } = req.body;
+	pool.getConnection((err, connection) => {
+		if (err) throw err;
+		let query = `select count(id) from unitwords`;
+		if (units?.length > 0) {
+			query += ` where unit in ${multi(units)}`;
+		}
+		connection.query(query, (err, res) => {
+			if (err) throw err;
+			connection.release();
+			reshttp.status(200);
+			reshttp.end(JSON.stringify({
+				message: 'count',
+				count: res[0]['count(id)']
+			}))
+		})
+	})
 }
