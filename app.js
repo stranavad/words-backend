@@ -26,6 +26,7 @@ const words = require("./views/words");
 const units = require("./views/units");
 const nubes = require("./views/nubes");
 const utils = require("./views/utils");
+const learning = require("./views/learning");
 
 app.use(function (req, res, next) {
 	res.append("Access-Control-Allow-Origin", ["*"]);
@@ -34,6 +35,7 @@ app.use(function (req, res, next) {
 	next();
 });
 
+app.use("/learning", learning);
 app.use("/words", words);
 app.use("/units", units);
 app.use("/utils", utils);
