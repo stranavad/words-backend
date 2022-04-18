@@ -17,10 +17,11 @@ function multi(array) {
 // get word
 function getWord(req, reshttp) {
 	const { words, units } = req.body;
+	const language = req.body.language || "en";
 	pool.getConnection((err, connection) => {
 		if (err) throw err;
 		// query builder start
-		let query = "select id,cz,en from unitwords ";
+		let query = `select id,en,cz from unitwords `;
 		if (words.length > 0 || units.length > 0) {
 			query += "where";
 			if (words.length > 0) {
@@ -49,7 +50,7 @@ function getWord(req, reshttp) {
 			} else {
 				// selecting other words
 				connection.query(
-					`select id,en from unitwords where id != ${word[0].id} order by rand() limit 3`,
+					`select id,${language} from unitwords where id != ${word[0].id} order by rand() limit 3`,
 					(err, resWords) => {
 						if (err) throw err;
 						connection.release();
@@ -65,10 +66,10 @@ function getWord(req, reshttp) {
 								JSON.stringify({
 									message: "word",
 									guessWords: shuffle([
-										...resWords.map((word) => word.en),
-										word[0].en,
+										...resWords.map((word) => word[language]),
+										word[0][language],
 									]),
-									word: { id: word[0].id, cz: word[0].cz },
+									word: { id: word[0].id, word: word[0][language === 'en' ? 'cz' : 'en'] },
 								})
 							);
 						}
@@ -98,10 +99,11 @@ function shuffle(array) {
 // check if user's answer is correct
 function isCorrect(req, reshttp) {
 	const { id, answer } = req.body;
+	const language = req.body.language || 'en';
 	pool.getConnection((err, connection) => {
 		if (err) throw err;
 		connection.query(
-			`select en from unitwords where id = ${id}`,
+			`select ${language} from unitwords where id = ${id}`,
 			(err, res) => {
 				if (err) throw err;
 				connection.release();
@@ -109,7 +111,7 @@ function isCorrect(req, reshttp) {
 				reshttp.end(
 					JSON.stringify({
 						message: "something",
-						correct: answer === res[0].en,
+						correct: answer === res[0][language],
 					})
 				);
 			}
@@ -122,7 +124,7 @@ function countWords(req, reshttp) {
 	pool.getConnection((err, connection) => {
 		if (err) throw err;
 		let query = `select count(id) from unitwords`;
-		if (units) {
+		if (units?.length) {
 			query += ` where unit in ${multi(units)}`;
 		}
 		connection.query(query, (err, res) => {
