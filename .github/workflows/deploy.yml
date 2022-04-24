@@ -1,0 +1,21 @@
+name: remote ssh command
+on:
+  push:
+    braches: [development]
+jobs:
+
+  Deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    steps:
+    - name: executing remote ssh commands using password
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        password: ${{ secrets.PASSWORD }}
+        script: |
+          cd words-backend
+          git pull
+          forever stopall
+          forever start app.js
