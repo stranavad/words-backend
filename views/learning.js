@@ -66,10 +66,18 @@ function getWord(req, reshttp) {
 								JSON.stringify({
 									message: "word",
 									guessWords: shuffle([
-										...resWords.map((word) => word[language]),
+										...resWords.map(
+											(word) => word[language]
+										),
 										word[0][language],
 									]),
-									word: { id: word[0].id, word: word[0][language === 'en' ? 'cz' : 'en'], mistakes: 0 },
+									word: {
+										id: word[0].id,
+										word: word[0][
+											language === "en" ? "cz" : "en"
+										],
+										mistakes: 0,
+									},
 								})
 							);
 						}
@@ -99,7 +107,7 @@ function shuffle(array) {
 // check if user's answer is correct
 function isCorrect(req, reshttp) {
 	const { id, answer } = req.body;
-	const language = req.body.language || 'en';
+	const language = req.body.language || "en";
 	pool.getConnection((err, connection) => {
 		if (err) throw err;
 		connection.query(
@@ -131,10 +139,12 @@ function countWords(req, reshttp) {
 			if (err) throw err;
 			connection.release();
 			reshttp.status(200);
-			reshttp.end(JSON.stringify({
-				message: 'count',
-				count: res[0]['count(id)']
-			}))
-		})
-	})
+			reshttp.end(
+				JSON.stringify({
+					message: "count",
+					count: res[0]["count(id)"],
+				})
+			);
+		});
+	});
 }
