@@ -7,6 +7,7 @@ const pool = require("../app");
 router.post("/", jsonParser, getWord);
 router.post("/correct", jsonParser, isCorrect);
 router.post("/count", jsonParser, countWords);
+router.post("/exam", jsonParser, checkExamWords);
 
 module.exports = router;
 
@@ -147,4 +148,47 @@ function countWords(req, reshttp) {
 			);
 		});
 	});
+}
+
+// Check all words from user in exam mode
+function checkExamWords(req, reshttp) {
+	const { language, answers } = req.body;
+	if (language && answers.length > 0) {
+		pool.getConnection((err, connection) => {
+			if (err) throw err;
+			const query = `select id,cz,en from unitwords where id in ${multi(
+				answers.map((a) => a.id)
+			)}`;
+			connection.query(query, (err, res) => {
+				if (err) throw err;
+				connection.release();
+				// get correct answers and check if correct
+				const correctWords = res.map((data) => {
+					const userAnswer = answers.find((a) => a.id === data.id);
+					return {
+						correct: data[language] === userAnswer.answer,
+						userAnswer: userAnswer.answer,
+						correctAnswer: data[language],
+						word: data[language === "cz" ? "en" : "cz"],
+						id: data.id
+					};
+				});
+				const mistakes = correctWords.filter((word) => !word.correct).length;
+				reshttp.status(200);
+				reshttp.end(
+					JSON.stringify({
+						answers: correctWords,
+						percentage: ((correctWords.length - mistakes) / correctWords.length) * 100,
+					})
+				);
+			});
+		});
+	} else {
+		reshttp.status(200);
+		reshttp.end(
+			JSON.stringify({
+				message: "No answers were provided",
+			})
+		);
+	}
 }
