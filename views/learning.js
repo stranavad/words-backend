@@ -69,7 +69,7 @@ function getWord(req, reshttp) {
 										...resWords.map((word) => word[language]),
 										word[0][language],
 									]),
-									word: { id: word[0].id, word: word[0][language === 'en' ? 'cz' : 'en'] },
+									word: { id: word[0].id, word: word[0][language === 'en' ? 'cz' : 'en'], mistakes: 0 },
 								})
 							);
 						}
